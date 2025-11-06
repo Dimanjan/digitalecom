@@ -11,6 +11,14 @@ A modern e-commerce platform for selling digital products like ChatGPT, Spotify,
 - 🔍 Product search and filtering
 - ✅ Comprehensive test coverage
 
+## Screenshots
+
+### Frontend
+![Frontend Showcase](./frontend/app/showcases/frontend.png)
+
+### Backend API
+![Backend Showcase](./frontend/app/showcases/backend.png)
+
 ## Tech Stack
 
 ### Backend
