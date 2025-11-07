@@ -2,12 +2,21 @@
 
 import Link from 'next/link'
 import { useContext } from 'react'
+import { useRouter } from 'next/navigation'
 import { CartContext } from '@/context/CartContext'
-import { FiShoppingCart } from 'react-icons/fi'
+import { AuthContext } from '@/context/AuthContext'
+import { FiShoppingCart, FiUser, FiLogOut } from 'react-icons/fi'
 
 export default function Navbar() {
   const { cartItems } = useContext(CartContext)
+  const { user, logout, isAuthenticated } = useContext(AuthContext)
+  const router = useRouter()
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0)
+
+  const handleLogout = async () => {
+    await logout()
+    router.push('/')
+  }
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -40,6 +49,39 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
+            {isAuthenticated ? (
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/profile"
+                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                >
+                  <FiUser className="w-5 h-5" />
+                  <span>{user?.username || 'Profile'}</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                >
+                  <FiLogOut className="w-5 h-5" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/login"
+                  className="text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>

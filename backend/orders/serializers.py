@@ -3,9 +3,18 @@ from .models import Order, OrderItem
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    
     class Meta:
         model = OrderItem
         fields = ['id', 'product_name', 'product_price', 'quantity', 'subtotal']
+
+
+class OrderItemCreateSerializer(serializers.Serializer):
+    """Serializer for creating order items (without subtotal)"""
+    product_name = serializers.CharField(max_length=200)
+    product_price = serializers.DecimalField(max_digits=10, decimal_places=2)
+    quantity = serializers.IntegerField(min_value=1)
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -22,7 +31,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderCreateSerializer(serializers.ModelSerializer):
-    items = OrderItemSerializer(many=True)
+    items = OrderItemCreateSerializer(many=True)
 
     class Meta:
         model = Order
@@ -30,15 +39,32 @@ class OrderCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         items_data = validated_data.pop('items')
-        order = Order.objects.create(**validated_data)
         
-        total_amount = 0
+        # Calculate total amount first
+        from decimal import Decimal
+        total_amount = Decimal('0.00')
         for item_data in items_data:
-            subtotal = item_data['product_price'] * item_data['quantity']
+            price = Decimal(str(item_data['product_price']))
+            subtotal = price * item_data['quantity']
             total_amount += subtotal
-            OrderItem.objects.create(order=order, **item_data, subtotal=subtotal)
         
-        order.total_amount = total_amount
-        order.save()
+        # Create order with total_amount
+        order = Order.objects.create(
+            total_amount=total_amount,
+            **validated_data
+        )
+        
+        # Create order items
+        for item_data in items_data:
+            price = Decimal(str(item_data['product_price']))
+            subtotal = price * item_data['quantity']
+            OrderItem.objects.create(
+                order=order,
+                product_name=item_data['product_name'],
+                product_price=price,
+                quantity=item_data['quantity'],
+                subtotal=subtotal
+            )
+        
         return order
 

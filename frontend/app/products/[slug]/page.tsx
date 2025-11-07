@@ -8,12 +8,15 @@ import { CartContext } from '@/context/CartContext'
 import { Product } from '@/types'
 import { getProducts } from '@/lib/api'
 import { FiShoppingCart } from 'react-icons/fi'
+import ReviewList from '@/components/ReviewList'
+import ReviewForm from '@/components/ReviewForm'
 
 export default function ProductDetailPage() {
   const params = useParams()
   const slug = params?.slug as string
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reviewKey, setReviewKey] = useState(0)
   const { addToCart } = useContext(CartContext)
 
   useEffect(() => {
@@ -110,6 +113,14 @@ export default function ProductDetailPage() {
             </button>
           </div>
         </div>
+      </div>
+
+      <div className="mt-12">
+        <ReviewList key={reviewKey} productId={product.id} />
+        <ReviewForm 
+          productId={product.id} 
+          onReviewSubmitted={() => setReviewKey(prev => prev + 1)} 
+        />
       </div>
     </div>
   )
